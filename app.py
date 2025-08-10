@@ -58,13 +58,15 @@ def calculate_sma(data, window):
     """Simple moving average"""
     return data.rolling(window=window).mean()
 
-def calculate_rsi(data, window=14):
-    """Simple RSI calculation"""
-    delta = data.diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=window).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=window).mean()
-    rs = gain / loss
-    return 100 - (100 / (1 + rs))
+rsi_series = calculate_rsi(stock_data['Close'])
+if len(rsi_series.dropna()) > 0:
+    current_rsi = rsi_series.iloc[-1]  # scalar value
+    rsi_signal = (
+        "Oversold" if current_rsi < 30
+        else "Overbought" if current_rsi > 70
+        else "Neutral"
+    )
+    indicator_cols[0].metric("RSI (14)", f"{current_rsi:.1f}", rsi_signal)
 
 def main():
     # Header
